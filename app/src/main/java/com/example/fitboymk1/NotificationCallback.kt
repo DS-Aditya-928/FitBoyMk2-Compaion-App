@@ -5,8 +5,6 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothManager
 import android.content.Context
@@ -21,10 +19,11 @@ import android.service.notification.StatusBarNotification
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import com.example.btmodule.BTInstance
+import com.example.btmodule.BTManager
+import java.util.UUID
 
-var bd: BluetoothDevice? = null
 val mListener = KeyChanged()
-//var btGatt: BluetoothGatt? = null
 
 class NotificationListener : NotificationListenerService()
 {
@@ -78,15 +77,13 @@ class NotificationListener : NotificationListenerService()
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         registerReceiver(mReceiver, filter);
 
-        val btManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
-        val btAdapter = btManager.adapter
+        BTManager.init(this, getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager) {
+            BTInstance(
+                UUID.randomUUID()
+            )
+        }
 
-        bd = btAdapter.getRemoteDevice("EC:62:60:32:C6:4E") as BluetoothDevice
-
-        //Log.i("C", "Calling connectGatt")
-        btGatt = bd?.connectGatt(applicationContext, true, BTCallBack()) as BluetoothGatt
-        Log.i("Dev", "AUTOCONNECT SET")
 
         super.onListenerConnected()
     }
@@ -165,18 +162,21 @@ class NotificationListener : NotificationListenerService()
 
         Log.i("SEND MSG", sendMsg)
 
+        /*
         if(connected and (notBufC != null))
         {
             notBufClean = false
             notDelBufClean = false
             btGatt?.writeCharacteristic(notBufC!!, sendMsg.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
         }
+         */
     }
 
     @SuppressLint("MissingPermission")
     override fun onNotificationRemoved(sbn: StatusBarNotification?)
     {
         Log.i("SEND MSG DEL", sbn?.key!!)
+        /*
         if(connected and (notDelBufC != null) and (sbn.key != null))
         {
             while(!notDelBufClean)
@@ -186,6 +186,7 @@ class NotificationListener : NotificationListenerService()
             notDelBufClean = false
             btGatt?.writeCharacteristic(notDelBufC!!, sbn.key!!.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
         }
+        */
         super.onNotificationRemoved(sbn)
     }
 }

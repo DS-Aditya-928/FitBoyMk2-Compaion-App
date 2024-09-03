@@ -15,8 +15,10 @@ import android.media.session.PlaybackState
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import com.example.btmodule.BTInstance
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import java.util.UUID
 import javax.security.auth.callback.Callback
 import kotlin.random.Random
 
@@ -25,6 +27,9 @@ var mediaAppName = ""
 var ccB = DeetsCallback()
 var deetsClean = true
 var sentDeets = false
+
+val MUSICDEETS_UUID: UUID = UUID.fromString("5df4d2b0-a927-11ee-a506-0242ac120002")
+val MUSICCONTROL_UUID : UUID = UUID.fromString("6ddb28be-a927-11ee-a506-0242ac120002")
 
 @SuppressLint("MissingPermission")
 fun sendDetes(mc: MediaController?)
@@ -69,12 +74,15 @@ fun sendDetes(mc: MediaController?)
     //Log.i("<KEYS", metadata?.keySet().toString())
     while(!deetsClean);
 
+    /*
     if((deetsCharacteristic != null) and connected)
     {
         deetsClean = false
-        btGatt?.writeCharacteristic(deetsCharacteristic!!, toSend.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+        //btGatt?.writeCharacteristic(deetsCharacteristic!!, toSend.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
     }
 
+
+     */
     deetsClean = true
 }
 
@@ -104,10 +112,14 @@ public class KeyChanged: MediaSessionManager.OnMediaKeyEventSessionChangedListen
         {
             lastController?.unregisterCallback(ccB)
             //controller deregged. send kill cmd
+
+            /*
             if((deetsCharacteristic != null) and connected)
             {
                 btGatt?.writeCharacteristic(deetsCharacteristic!!, "KILL".toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
             }
+            */
+
             return
         }
 
@@ -163,10 +175,15 @@ public class DeetsCallback: MediaController.Callback()
     override fun onSessionDestroyed() {
         Log.i("Sesh", "sesh destryed");
         //send message to watch to disable media control.
+        /*
         if((deetsCharacteristic != null) and connected)
         {
             btGatt?.writeCharacteristic(deetsCharacteristic!!, "KILL".toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
         }
+
+         */
         super.onSessionDestroyed()
     }
 }
+
+val musicdeetsBTInstance : BTInstance = BTInstance(MUSICDEETS_UUID)

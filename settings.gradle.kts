@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "FitBoy Mk.1"
 include(":app")
- 
+include(":BTModule")
