@@ -5,6 +5,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothManager
 import android.content.Context
@@ -21,9 +22,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.example.btmodule.BTInstance
 import com.example.btmodule.BTManager
+import com.example.btmodule.DSCallback
 import java.util.UUID
 
 val mListener = KeyChanged()
+
+val NOTBUF_UUID: UUID = UUID.fromString("05590c96-12bb-11ee-be56-0242ac120002")
+val OUTGOINGDELBUF_UUID: UUID = UUID.fromString("19e04166-12bb-11ee-be56-0242ac120002")
+val INCOMINGDEL_UUID: UUID = UUID.fromString("c533a7ba-272e-11ee-be56-0242ac120002")
 
 class NotificationListener : NotificationListenerService()
 {
@@ -77,13 +83,7 @@ class NotificationListener : NotificationListenerService()
         val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         registerReceiver(mReceiver, filter);
 
-
-        BTManager.init(this, getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager) {
-            BTInstance(
-                UUID.randomUUID()
-            )
-        }
-
+        BTManager.init(this, (getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager), SERVICE_UUID)
 
         super.onListenerConnected()
     }
@@ -155,13 +155,9 @@ class NotificationListener : NotificationListenerService()
         sendMsg.filter { it.code <= 127 }
         sendMsg += "<5>$nId"
 
-        while(!notBufClean)
-        {
-            Thread.sleep(1)
-        }
-
         Log.i("SEND MSG", sendMsg)
 
+        notificationSenderBTInstance.writeCharacteristic(sendMsg.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
         /*
         if(connected and (notBufC != null))
         {
@@ -176,6 +172,11 @@ class NotificationListener : NotificationListenerService()
     override fun onNotificationRemoved(sbn: StatusBarNotification?)
     {
         Log.i("SEND MSG DEL", sbn?.key!!)
+        if(sbn.key != null)
+        {
+            notificationDelSenderBTInstance.writeCharacteristic(sbn.key!!.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+        }
+
         /*
         if(connected and (notDelBufC != null) and (sbn.key != null))
         {
@@ -190,3 +191,18 @@ class NotificationListener : NotificationListenerService()
         super.onNotificationRemoved(sbn)
     }
 }
+
+class icCB : DSCallback()
+{
+    override fun onCharacteristicChange(characteristic: BluetoothGattCharacteristic, value : ByteArray)
+    {
+        val v = value.decodeToString()
+        NotificationListener.mainContext()?.cancelNotification(v)
+        Log.i("C Change", v)
+    }
+}
+
+
+val notificationSenderBTInstance : BTInstance = BTInstance(NOTBUF_UUID, null)
+val notificationDelSenderBTInstance : BTInstance = BTInstance(OUTGOINGDELBUF_UUID, null)
+val incomingNotDelBTInstance : BTInstance = BTInstance(INCOMINGDEL_UUID, icCB(), true)

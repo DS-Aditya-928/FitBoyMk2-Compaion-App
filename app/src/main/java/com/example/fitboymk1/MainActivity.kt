@@ -22,14 +22,9 @@ import androidx.core.app.NotificationManagerCompat
 import com.example.fitboymk1.ui.theme.FitBoyMk1Theme
 import kotlinx.coroutines.delay
 import java.util.UUID
+import com.example.fitboymk1.timeBTInstance
 
 val SERVICE_UUID: UUID = UUID.fromString("1f55d926-12bb-11ee-be56-0242ac120002")
-val NOTBUF_UUID: UUID = UUID.fromString("05590c96-12bb-11ee-be56-0242ac120002")
-val NOTDELBUF_UUID: UUID = UUID.fromString("19e04166-12bb-11ee-be56-0242ac120002")
-val TIME_UUID: UUID = UUID.fromString("93c37a10-1f37-11ee-be56-0242ac120002")
-val FBDEL_UUID: UUID = UUID.fromString("c533a7ba-272e-11ee-be56-0242ac120002")
-
-val CHARACTERISTIC_UPDATE_NOTIFICATION_DESCRIPTOR_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
 var tDN : Notification? = null
 //var nLS: NotificationListenerService? = null
@@ -42,6 +37,7 @@ var cInit = false
 class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         Log.i("MAIN ACTIVITY", "DEAD");
+        Log.i("l", "${timeBTInstance.characteristic}")
         super.onDestroy()
     }
 

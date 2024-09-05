@@ -1,25 +1,21 @@
 package com.example.fitboymk1
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.content.ComponentName
-import android.content.Context
 import android.content.pm.PackageManager
 import android.media.MediaMetadata
 import android.media.session.MediaController
 import android.media.session.MediaSession
-import android.media.session.MediaSession.Token
 import android.media.session.MediaSessionManager
-import android.media.session.MediaSessionManager.OnActiveSessionsChangedListener
 import android.media.session.PlaybackState
-import android.os.Build
+import android.os.SystemClock
 import android.util.Log
-import androidx.annotation.RequiresApi
+import android.view.KeyEvent
 import com.example.btmodule.BTInstance
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import com.example.btmodule.DSCallback
 import java.util.UUID
-import javax.security.auth.callback.Callback
 import kotlin.random.Random
 
 var mediaAppName = ""
@@ -59,6 +55,11 @@ fun sendDetes(mc: MediaController?)
         {
             cPos = pbS.position
             play = -1 * (pbS.state == PlaybackState.STATE_PAUSED).compareTo(true)
+            if(cPos < 0)
+            {
+                cPos = 0
+                play = 0
+            }
         }
 
         //trackN = if(metadata.getLong(MediaMetadata.METADATA_KEY_TRACK_NUMBER) == null) " " else (metadata.getLong(MediaMetadata.METADATA_KEY_TRACK_NUMBER).toString())
@@ -72,7 +73,8 @@ fun sendDetes(mc: MediaController?)
     sentDeets = true
 
     //Log.i("<KEYS", metadata?.keySet().toString())
-    while(!deetsClean);
+
+    musicdeetsBTInstance.writeCharacteristic(toSend.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
 
     /*
     if((deetsCharacteristic != null) and connected)
@@ -104,7 +106,7 @@ public class KeyChanged: MediaSessionManager.OnMediaKeyEventSessionChangedListen
 
         Log.i("KC", "$mediaAppName " + p1.toString() + " " + Random.nextInt().toString())
 
-        Thread.sleep(100)
+        Thread.sleep(500)
 
         val mcList = mediaManager?.getActiveSessions(ComponentName("com.example.fitboymk1", ".NotificationListener"));
 
@@ -112,6 +114,8 @@ public class KeyChanged: MediaSessionManager.OnMediaKeyEventSessionChangedListen
         {
             lastController?.unregisterCallback(ccB)
             //controller deregged. send kill cmd
+
+            musicdeetsBTInstance.writeCharacteristic("KILL".toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
 
             /*
             if((deetsCharacteristic != null) and connected)
@@ -174,6 +178,8 @@ public class DeetsCallback: MediaController.Callback()
     @SuppressLint("MissingPermission")
     override fun onSessionDestroyed() {
         Log.i("Sesh", "sesh destryed");
+
+        musicdeetsBTInstance.writeCharacteristic("KILL".toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
         //send message to watch to disable media control.
         /*
         if((deetsCharacteristic != null) and connected)
@@ -186,4 +192,65 @@ public class DeetsCallback: MediaController.Callback()
     }
 }
 
-val musicdeetsBTInstance : BTInstance = BTInstance(MUSICDEETS_UUID)
+class mdSCB: DSCallback()
+{
+    override fun onConnectionStateChange(gatt: BluetoothGatt?, newState: Int) {
+        if(gatt != null)
+        {
+            sendDetes(lastController)
+        }
+    }
+}
+
+class musicControlCB : DSCallback()
+{
+    override fun onCharacteristicChange(
+        characteristic: BluetoothGattCharacteristic,
+        value: ByteArray
+    ) {
+        val v = value.decodeToString()
+        if(v.compareTo("1") == 0)
+        {
+            val eventtime = SystemClock.uptimeMillis()
+
+            val downEvent =
+                KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0)
+            aM?.dispatchMediaKeyEvent(downEvent)
+
+            val upEvent =
+                KeyEvent(eventtime, eventtime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0)
+            aM?.dispatchMediaKeyEvent(upEvent)
+        }
+
+        else if(v.compareTo("2") == 0)
+        {
+            val eventtime = SystemClock.uptimeMillis()
+
+            val downEvent =
+                KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT, 0)
+            aM?.dispatchMediaKeyEvent(downEvent)
+
+            val upEvent =
+                KeyEvent(eventtime, eventtime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_NEXT, 0)
+            aM?.dispatchMediaKeyEvent(upEvent)
+        }
+
+        else if(v.compareTo("3") == 0)
+        {
+            val eventtime = SystemClock.uptimeMillis()
+
+            val downEvent =
+                KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0)
+            aM?.dispatchMediaKeyEvent(downEvent)
+
+            val upEvent =
+                KeyEvent(eventtime, eventtime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0)
+            aM?.dispatchMediaKeyEvent(upEvent)
+        }
+
+
+    }
+}
+
+val musicdeetsBTInstance : BTInstance = BTInstance(MUSICDEETS_UUID, mdSCB())
+val musicControlBTInstance : BTInstance = BTInstance(MUSICCONTROL_UUID, musicControlCB(), true)
