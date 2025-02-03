@@ -18,18 +18,17 @@ class TimeGCallback : DSCallback()
     @SuppressLint("MissingPermission")
     override fun onConnectionStateChange(gatt: BluetoothGatt?, newState: Int)
     {
-        if ((gatt != null) and (timeBTInstance.characteristic != null))
+        if ((gatt != null))// and (timeBTInstance.characteristic != null))
         {
             var unixTime = (Calendar.getInstance().timeInMillis/1000)
             val tz = TimeZone.getDefault() as TimeZone
             unixTime += (tz.getOffset(Calendar.getInstance().timeInMillis)/1000)
 
             val utString = unixTime.toString()
-            timeBTInstance.writeCharacteristic(utString.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+            //timeBTInstance.writeCharacteristic(utString.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
             //timeBTInstance.characteristic?.let { gatt?.writeCharacteristic(it,  utString.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) }
             Log.i("Time", "Set $utString " + unixTime + " " + tz.getOffset(unixTime)/1000)
         }
     }
 }
 
-val timeBTInstance : BTInstance = BTInstance(TIME_UUID, TimeGCallback())

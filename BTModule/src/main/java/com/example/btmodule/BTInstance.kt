@@ -26,7 +26,7 @@ open class DSCallback
 
 class BTInstance(uuid: UUID, bgCallback: DSCallback?, enableNotification: Boolean = false)
 {
-    internal var uuid : UUID = UUID.randomUUID()
+    var uuid : UUID = UUID.randomUUID()
     internal var enableNotification : Boolean = false
     internal var bgCallback : DSCallback? = null
     var characteristic : BluetoothGattCharacteristic? = null

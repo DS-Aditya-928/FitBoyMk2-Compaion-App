@@ -63,6 +63,7 @@ class BTWorker(context: Context, workerParams: WorkerParameters) : Worker(contex
         for(i in BTManager.btInstanceArray)
         {
             waitTD()
+            Log.i("Info", "Looking for ${i.uuid}")
             i.characteristic = gattService.getCharacteristic(i.uuid)
 
             if(i.characteristic != null)
@@ -177,22 +178,22 @@ class bCB : BluetoothGattCallback()
 }
 
 class BTManager {
-    companion object
-    {
-        val CHARACTERISTIC_UPDATE_NOTIFICATION_DESCRIPTOR_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+    companion object {
+        val CHARACTERISTIC_UPDATE_NOTIFICATION_DESCRIPTOR_UUID: UUID =
+            UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
         var btGatt: BluetoothGatt? = null
         internal var connected = false
-        internal var initSemaphore : Semaphore = Semaphore(1)
-        internal var workManager : WorkManager? = null
-        internal var btInstanceArray : Array<BTInstance> = emptyArray()
+        internal var initSemaphore: Semaphore = Semaphore(1)
+        internal var workManager: WorkManager? = null
+        var btInstanceArray: Array<BTInstance> = emptyArray()
+        var btInstanceArrayPL: Array<BTInstance> = emptyArray()
         internal var writeClean = true
 
-        internal var serviceUUID : UUID = UUID.randomUUID()
+        internal var serviceUUID: UUID = UUID.randomUUID()
 
 
         @SuppressLint("MissingPermission")
-        public fun init(service: android.app.Service, btManager: BluetoothManager, su : UUID)
-        {
+        public fun init(service: android.app.Service, btManager: BluetoothManager, su: UUID) {
             Log.i("Bluetooth Manager", "Bluetooth init...")
             this.serviceUUID = su
 
@@ -203,11 +204,15 @@ class BTManager {
             btGatt = bd.connectGatt(service as Context, true, bCB()) as BluetoothGatt
             workManager = WorkManager.getInstance(service as Context)
 
+            Thread.sleep(100)
+            for (i in btInstanceArrayPL) {
+                Log.i("L", i.uuid.toString())
+                btInstanceArray += BTInstance(i.uuid, i.bgCallback, i.enableNotification)
+            }
             Log.i("Bluetooth Manager", "Bluetooth init done!")
         }
 
-        internal fun onconnectSetup()
-        {
+        internal fun onconnectSetup() {
 
         }
     }

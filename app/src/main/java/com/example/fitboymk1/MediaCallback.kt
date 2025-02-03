@@ -14,7 +14,10 @@ import android.os.SystemClock
 import android.util.Log
 import android.view.KeyEvent
 import com.example.btmodule.BTInstance
+import com.example.btmodule.BTManager
 import com.example.btmodule.DSCallback
+import java.util.Calendar
+import java.util.TimeZone
 import java.util.UUID
 import kotlin.random.Random
 
@@ -73,8 +76,11 @@ fun sendDetes(mc: MediaController?)
     sentDeets = true
 
     //Log.i("<KEYS", metadata?.keySet().toString())
+    if(mc != null)
+    {
+        musicdeetsBTInstance.writeCharacteristic(toSend.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
 
-    musicdeetsBTInstance.writeCharacteristic(toSend.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+    }
 
     /*
     if((deetsCharacteristic != null) and connected)
@@ -86,6 +92,19 @@ fun sendDetes(mc: MediaController?)
 
      */
     deetsClean = true
+
+
+    if ((timeBTInstance.characteristic != null))
+    {
+        var unixTime = (Calendar.getInstance().timeInMillis/1000)
+        val tz = TimeZone.getDefault() as TimeZone
+        unixTime += (tz.getOffset(Calendar.getInstance().timeInMillis)/1000)
+
+        val utString = unixTime.toString()
+        timeBTInstance.writeCharacteristic(utString.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+        //timeBTInstance.characteristic?.let { gatt?.writeCharacteristic(it,  utString.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) }
+        Log.i("Time", "Set $utString " + unixTime + " " + tz.getOffset(unixTime)/1000)
+    }
 }
 
 
@@ -254,3 +273,4 @@ class musicControlCB : DSCallback()
 
 val musicdeetsBTInstance : BTInstance = BTInstance(MUSICDEETS_UUID, mdSCB())
 val musicControlBTInstance : BTInstance = BTInstance(MUSICCONTROL_UUID, musicControlCB(), true)
+val timeBTInstance : BTInstance = BTInstance(TIME_UUID,  TimeGCallback())
