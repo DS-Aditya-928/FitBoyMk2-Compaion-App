@@ -39,6 +39,7 @@ fun sendDetes(mc: MediaController?)
     var trackLength = 0L
     var play = 0
     var cPos = 0L
+    var lyrics = ""
 
     if(mc != null)
     {
@@ -92,19 +93,6 @@ fun sendDetes(mc: MediaController?)
 
      */
     deetsClean = true
-
-
-    if ((timeBTInstance.characteristic != null))
-    {
-        var unixTime = (Calendar.getInstance().timeInMillis/1000)
-        val tz = TimeZone.getDefault() as TimeZone
-        unixTime += (tz.getOffset(Calendar.getInstance().timeInMillis)/1000)
-
-        val utString = unixTime.toString()
-        timeBTInstance.writeCharacteristic(utString.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
-        //timeBTInstance.characteristic?.let { gatt?.writeCharacteristic(it,  utString.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) }
-        Log.i("Time", "Set $utString " + unixTime + " " + tz.getOffset(unixTime)/1000)
-    }
 }
 
 
@@ -266,11 +254,9 @@ class musicControlCB : DSCallback()
                 KeyEvent(eventtime, eventtime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0)
             aM?.dispatchMediaKeyEvent(upEvent)
         }
-
-
     }
 }
 
-val musicdeetsBTInstance : BTInstance = BTInstance(MUSICDEETS_UUID, mdSCB())
-val musicControlBTInstance : BTInstance = BTInstance(MUSICCONTROL_UUID, musicControlCB(), true)
-val timeBTInstance : BTInstance = BTInstance(TIME_UUID,  TimeGCallback())
+val musicdeetsBTInstance : BTInstance = BTInstance("Music Deets", MUSICDEETS_UUID, mdSCB())
+val musicControlBTInstance : BTInstance = BTInstance("Music Control", MUSICCONTROL_UUID, musicControlCB(), true)
+val timeBTInstance : BTInstance = BTInstance("Time Set", TIME_UUID,  TimeGCallback())

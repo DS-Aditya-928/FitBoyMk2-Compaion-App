@@ -147,12 +147,17 @@ class NotificationListener : NotificationListenerService()
                 FT += "..."
             }
 
+            for(i in java.lang.String(FT))
+            {
+                Log.i("INT", i.toString() + " " + i.code.toString())
+            }
+
             sendMsg += FT
         }
 
         val nId = sbn.key
 
-        sendMsg.filter { it.code <= 127 }
+        sendMsg = sendMsg.filter { it.code <= 127 }
         sendMsg += "<5>$nId"
 
         Log.i("SEND MSG", sendMsg)
@@ -203,6 +208,6 @@ class icCB : DSCallback()
 }
 
 
-val notificationSenderBTInstance : BTInstance = BTInstance(NOTBUF_UUID, null)
-val notificationDelSenderBTInstance : BTInstance = BTInstance(OUTGOINGDELBUF_UUID, null)
-val incomingNotDelBTInstance : BTInstance = BTInstance(INCOMINGDEL_UUID, icCB(), true)
+val notificationSenderBTInstance : BTInstance = BTInstance("Send Notifications", NOTBUF_UUID, null)
+val notificationDelSenderBTInstance : BTInstance = BTInstance("Send Notif Delete Notice", OUTGOINGDELBUF_UUID, null)
+val incomingNotDelBTInstance : BTInstance = BTInstance("Incoming notif del", INCOMINGDEL_UUID, icCB(), true)

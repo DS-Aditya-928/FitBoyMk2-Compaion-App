@@ -11,6 +11,7 @@ import android.media.session.MediaSessionManager
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
+import android.widget.Button
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,10 @@ import com.example.fitboymk1.ui.theme.FitBoyMk1Theme
 import kotlinx.coroutines.delay
 import java.util.UUID
 import com.example.fitboymk1.timeBTInstance
+import android.view.View
+import android.widget.TextView
+import com.example.btmodule.BTManager
+
 
 val SERVICE_UUID: UUID = UUID.fromString("1f55d926-12bb-11ee-be56-0242ac120002")
 
@@ -59,6 +64,17 @@ class MainActivity : ComponentActivity() {
             2
         )
 
+        setContentView(R.layout.layout)
+        findViewById<Button>(R.id.RefreshButton).setOnClickListener {
+            // click handling code
+            Log.i("D", "Refreshing...")
+            var tS = "PSU Goths #🪡diy"
+            Log.i("stringtest", tS)
+            BTManager.refreshString()
+            findViewById<TextView>(R.id.ServiceList).text = BTManager.btManagerDeets
+        }
+
+        /*
         setContent {
             FitBoyMk1Theme {
                 // A surface container using the 'background' color from the theme
@@ -70,6 +86,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        */
     }
 }
 

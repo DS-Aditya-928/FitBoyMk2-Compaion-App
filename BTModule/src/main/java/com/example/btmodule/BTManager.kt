@@ -191,6 +191,7 @@ class BTManager {
 
         internal var serviceUUID: UUID = UUID.randomUUID()
 
+        var btManagerDeets = ""
 
         @SuppressLint("MissingPermission")
         public fun init(service: android.app.Service, btManager: BluetoothManager, su: UUID) {
@@ -207,13 +208,18 @@ class BTManager {
             Thread.sleep(100)
             for (i in btInstanceArrayPL) {
                 Log.i("L", i.uuid.toString())
-                btInstanceArray += BTInstance(i.uuid, i.bgCallback, i.enableNotification)
+                btInstanceArray += BTInstance(i.name, i.uuid, i.bgCallback, i.enableNotification)
             }
             Log.i("Bluetooth Manager", "Bluetooth init done!")
         }
 
-        internal fun onconnectSetup() {
-
+        fun refreshString()
+        {
+            btManagerDeets = ""
+            for(i in BTManager.btInstanceArray)
+            {
+                btManagerDeets += i.name + "\n"
+            }
         }
     }
 }

@@ -25,8 +25,8 @@ class TimeGCallback : DSCallback()
             unixTime += (tz.getOffset(Calendar.getInstance().timeInMillis)/1000)
 
             val utString = unixTime.toString()
-            //timeBTInstance.writeCharacteristic(utString.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
-            //timeBTInstance.characteristic?.let { gatt?.writeCharacteristic(it,  utString.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) }
+            timeBTInstance.writeCharacteristic(utString.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+            timeBTInstance.characteristic?.let { gatt?.writeCharacteristic(it,  utString.toByteArray(), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) }
             Log.i("Time", "Set $utString " + unixTime + " " + tz.getOffset(unixTime)/1000)
         }
     }
